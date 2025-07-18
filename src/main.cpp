@@ -21,26 +21,100 @@
  *
  *
  *
- * TODO: #1 Random number generator
+ * TODO: #1 Random number generator - Done
  *         * Seed = unix time + some value from device to make it random
  *         * Random number is being generated within limits of words<n>.txt file.
  * 
- * TODO: #2 File handler
+ * TODO: #2 File handler - Redisigned. Move with SQLite
  *         * Be able to read file get number of lines in file.
  *         * Be able to read specific line from a file.
- * TODO:  
+ *
+ * TODO: #3 Database handler
+ *         * Access a desired word database.
+ *
+ *
  *
  */
-#include <stdlib.h>
+ 
 #include <iostream>
-#include <string>
+#include <vector>
+#include "random.hpp"
+#include "words.hpp"
+#include "drawguess.hpp"
+#include "SQLiteCpp/SQLiteCpp.h"
+#include <SQLiteCpp/VariadicBind.h>
 
 using namespace std;
 
 const string RED {"\e[31m"}; 
 
+// Try multiple possible database paths
+SQLite::Database* openDatabase() {
+    vector<string> possiblePaths = {
+        "res/db/words5.db",
+        "../res/db/words5.db",
+        "../../res/db/words5.db",
+        "bin/res/db/words5.db"
+    };
+    
+    for (const string& path : possiblePaths) {
+        try {
+            //cout << "Trying to open database at: " << path << endl;
+            return new SQLite::Database(path);
+        } catch (const SQLite::Exception& e) {
+            cout << "Failed to open " << path << ": " << e.what() << endl;
+        }
+    }
+    
+    throw runtime_error("Could not open database file from any expected location");
+}
+
 int main()
 {
-    cout << RED << "Hello, World!" << endl;
+    try {
+        SQLite::Database* db = openDatabase();
+        
+        int size = getLength(*db);
+        string word = getWord(*db, random_int(0, size - 1));
+        vector<char> original = getVector(word);
+        //cout << "Word: " << word << endl;
+        bool guessed = false;
+        int attempts = 0;
+        while (!guessed && attempts < 6) {
+            string guess;
+            //cout << "Enter a guess: ";
+            cin >> guess;
+            cout << "\x1B[2J\x1B[H";
+            cout.flush();
+            if (checkLength(5, guess)) {
+                if (isWordInDatabase(*db, guess)) {
+                    vector<Letter> guessVector = createLetterVector(getVector(guess));
+                    if (compareWords(original, guessVector, 5)) {
+                        printResult(guessVector);
+                        cout << "you win" << endl;
+                        guessed = true;
+                        attempts++;
+                    }
+                    else {
+                        printResult(guessVector);
+                        attempts++;
+                        //cout << "Try again" << endl;
+                    }
+                } else {
+                    cout << "Word not in database!" << endl;
+                }
+            } else {
+                cout << "Word must be 5 letters long!" << endl;
+            }
+        }
+        if (attempts == 6) {
+            cout << "You lose! The word was: " << word << endl;
+        }
+        delete db;
+    } catch (const exception& e) {
+        cerr << "Error: " << e.what() << endl;
+        return 1;
+    }
+    
     return 0;
 }
