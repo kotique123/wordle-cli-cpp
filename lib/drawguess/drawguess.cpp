@@ -1,8 +1,10 @@
+#include <vector>
+#include <iostream>
 #include "drawguess.hpp"
 
 using namespace std;
 
-void printResult(vector<Letter>& guess) {
+void printGuess(vector<Letter>& guess) {
     for (int i = 0; i < guess.size(); i++) {
         if (guess[i].correct) {
             cout << GREEN << guess[i].letter << RESET;
@@ -14,4 +16,14 @@ void printResult(vector<Letter>& guess) {
         }
     }
     cout << endl;
+}
+
+void addGuess(const vector<Letter>& guess, vector<vector<Letter>>& guesses) {
+    guesses.push_back(guess);
+}
+
+void printAll(const vector<vector<Letter>>& guesses) {
+    for (vector<Letter> guess : guesses) {
+        printGuess(guess);
+    }
 }

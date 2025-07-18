@@ -31,7 +31,12 @@
  *
  * TODO: #3 Database handler
  *         * Access a desired word database.
- *
+ * TODO: #4 Drawing game in a consistent way
+ *         1. Accept input
+ *         2. Process it
+ *         3. Put proccessed input in an array or vector
+ *         4. Print it.
+ *         Clear the screen after accepting input
  *
  *
  */
@@ -90,13 +95,13 @@ int main()
                 if (isWordInDatabase(*db, guess)) {
                     vector<Letter> guessVector = createLetterVector(getVector(guess));
                     if (compareWords(original, guessVector, 5)) {
-                        printResult(guessVector);
+                        //printResult(guessVector);
                         cout << "you win" << endl;
                         guessed = true;
                         attempts++;
                     }
                     else {
-                        printResult(guessVector);
+                        //printResult(guessVector);
                         attempts++;
                         //cout << "Try again" << endl;
                     }
