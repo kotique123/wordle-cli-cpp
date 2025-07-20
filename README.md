@@ -20,3 +20,6 @@ You can find prebuilt binaries of the game in the `Release` section. Make sure t
 5. Generate Makefiles `cmake -DCMAKE_BUILD_TYPE=Release ..`
 6. Build `cmake --build .`
 7. The files will be in `bin` directory. Launch the game with `./bin/wordle-cli`
+
+![Screenshot of the menu](screenshots/menu.png)
+![Screenshot of the game](screenshots/game.png)
