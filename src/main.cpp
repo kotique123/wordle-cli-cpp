@@ -108,7 +108,7 @@ int main() {
                         player_attempts++;
                     }
                 } else {
-                    cout << "Invalid word" << endl;
+                    cout << "Word is not in the database. Try again." << endl;
                 }
             } else {
                 cout << "Invalid word length" << endl;
