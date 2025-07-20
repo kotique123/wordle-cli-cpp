@@ -1,46 +1,3 @@
-/* Wordle-cli game structure
- * 1. Ask for difficulty where default means 5 letter word with 6 attempts.
- * 2. Generate a random seed Time + some sort of device id.
- * 3. Ask user for a guess and check if guess is valid.
- *      * compare guess to a word.
- *      * check if guess is even a word based on a list of words.
- *      * if guess is a word, and is not a target word:
- *          * check what letters match exactly.
- *          * check what letters are there but are in different places.
- *          * return the result
- * 4. Repeat step 3 (game loop)
- * 5. If guess is sucessfull print win message and ask if a user wants to play again
- *      * if a user does not want to play the game, exit
- *      * if user want to play the game again, return back to step 1.
- * Data structures:
- *  enum for difficulties
- *  an arraylist of fixed size in which a word is disected so that we can determine which letters are there
- *  array of arrys that would allow us to print our guesses
- *  Maybe:
- *  a struct that would represent a guessed word/letter with color         
- *
- *
- *
- * TODO: #1 Random number generator - Done
- *         * Seed = unix time + some value from device to make it random
- *         * Random number is being generated within limits of words<n>.txt file.
- * 
- * TODO: #2 File handler - Redisigned. Move with SQLite
- *         * Be able to read file get number of lines in file.
- *         * Be able to read specific line from a file.
- *
- * TODO: #3 Database handler
- *         * Access a desired word database.
- * TODO: #4 Drawing game in a consistent way
- *         1. Accept input
- *         2. Process it
- *         3. Put proccessed input in an array or vector
- *         4. Print it.
- *         Clear the screen after accepting input
- *
- *
- */
- 
 #include <iostream>
 #include <vector>
 #include "random.hpp"
@@ -51,75 +8,136 @@
 
 using namespace std;
 
-const string RED {"\e[31m"}; 
-
-// Try multiple possible database paths
-SQLite::Database* openDatabase() {
-    vector<string> possiblePaths = {
-        "res/db/words5.db",
-        "../res/db/words5.db",
-        "../../res/db/words5.db",
-        "bin/res/db/words5.db"
-    };
-    
-    for (const string& path : possiblePaths) {
-        try {
-            //cout << "Trying to open database at: " << path << endl;
-            return new SQLite::Database(path);
-        } catch (const SQLite::Exception& e) {
-            cout << "Failed to open " << path << ": " << e.what() << endl;
-        }
-    }
-    
-    throw runtime_error("Could not open database file from any expected location");
-}
-
-int main()
-{
-    try {
-        SQLite::Database* db = openDatabase();
+int main() {
+    bool play = true;
+    while (play) {
+        int difficulty = 1;
+        int attempts = 5;
+        int length = 5; // Default to 5-letter words for custom word management
+        SQLite::Database* db = {};
+        vector<Letter> guess = {};
+        int player_attempts = {};
+        vector<vector<Letter>> guesses = createGuessesVector(6);
         
-        int size = getLength(*db);
-        string word = getWord(*db, random_int(0, size - 1));
-        vector<char> original = getVector(word);
-        //cout << "Word: " << word << endl;
-        bool guessed = false;
-        int attempts = 0;
-        while (!guessed && attempts < 6) {
-            string guess;
-            //cout << "Enter a guess: ";
-            cin >> guess;
-            cout << "\x1B[2J\x1B[H";
-            cout.flush();
-            if (checkLength(5, guess)) {
-                if (isWordInDatabase(*db, guess)) {
-                    vector<Letter> guessVector = createLetterVector(getVector(guess));
-                    if (compareWords(original, guessVector, 5)) {
-                        //printResult(guessVector);
-                        cout << "you win" << endl;
-                        guessed = true;
-                        attempts++;
-                    }
-                    else {
-                        //printResult(guessVector);
-                        attempts++;
-                        //cout << "Try again" << endl;
+        cout << "Choose a difficulty: " << endl;
+        cout << "1. Default" << endl;
+        cout << "2. Medium" << endl;
+        cout << "3. Hard" << endl;
+        cout << "4. Insane" << endl;
+        cout << "5. Godlike" << endl;
+        cout << "6. Custom Word Management" << endl;
+        cout << "7. Exit" << endl;
+        cin >> difficulty;
+
+        switch (difficulty) {
+            case 1:
+                attempts = 6;
+                length = 5;
+                db = openDatabase(length);
+                cout << "The word length is: " << length << endl;
+                cout << "The number of attempts is: " << attempts << endl;
+                break;
+            case 2:
+                attempts = 8;
+                length = random_int(6, 11);
+                db = openDatabase(length);
+                cout << "The word length is: " << length << endl;
+                cout << "The number of attempts is: " << attempts << endl;
+                break;  
+            case 3:
+                attempts = 10;
+                length = random_int(12, 17);
+                db = openDatabase(length);
+                cout << "The word length is: " << length << endl;
+                cout << "The number of attempts is: " << attempts << endl;
+                break;
+            case 4:
+                attempts = 15;
+                length = random_int(18, 23);
+                db = openDatabase(length);
+                cout << "The word length is: " << length << endl;
+                cout << "The number of attempts is: " << attempts << endl;
+                break;
+            case 5:
+                attempts = 30;
+                length = random_int(24, 29);
+                db = openDatabase(length);
+                cout << "The word length is: " << length << endl;
+                cout << "The number of attempts is: " << attempts << endl;
+                break;
+            case 6: {
+                // Use default 5-letter database for custom word management in write mode
+                db = openDatabaseForWriting(length);
+                handleCustomWordManagement(db);
+                closeDatabase(db);
+                continue; // Skip to next iteration without starting a game
+            }
+            case 7:
+                play = false;
+                continue;
+            default:
+                cout << "Invalid difficulty, defaulting to standard" << endl;
+                attempts = 6;
+                difficulty = 1;
+                length = 5;
+                db = openDatabase(length);
+                cout << "The word length is: " << length << endl;
+                cout << "The number of attempts is: " << attempts << endl;
+                break;
+        }
+
+        string word = getWord(*db, random_int(0, getLength(*db) - 1));
+        vector<char> word_vector = getVector(word);
+        bool win = false;
+        cout << "Enter a word: " << endl;
+        while (player_attempts < attempts) {
+            string player_guess;
+            cin >> player_guess;
+            clearScreen();
+            if (checkLength(length, player_guess)) {
+                if (isWordInDatabase(*db, player_guess)) {
+                    guess = createLetterVector(getVector(player_guess));
+                    if (compareWords(word_vector, guess, length)) {
+                        cout << "You win!" << endl;
+                        win = true;
+                        break;
+                    } else {
+                        cout << "The number of attempts is: " << attempts - player_attempts << endl;
+                        guesses.push_back(guess);
+                        printAll(guesses);
+                        player_attempts++;
                     }
                 } else {
-                    cout << "Word not in database!" << endl;
+                    cout << "Invalid word" << endl;
                 }
             } else {
-                cout << "Word must be 5 letters long!" << endl;
+                cout << "Invalid word length" << endl;
             }
         }
-        if (attempts == 6) {
-            cout << "You lose! The word was: " << word << endl;
+        if (win) {
+            cout << "You win!" << endl;
+            cout << "Want to play again? (y/n)" << endl;
+            char play_again;
+            cin >> play_again;
+            if (play_again == 'y') {
+                play = true;
+            } else {
+                play = false;
+            }
+        } else {
+            cout << "You lose!" << endl;
+            cout << "The word length is: " << length << endl;
+            cout << "The word was: " << word << endl;
+            cout << "Want to play again? (y/n)" << endl;
+            char play_again;
+            cin >> play_again;
+            if (play_again == 'y') {
+                play = true;
+            } else {
+                play = false;
+            }
         }
-        delete db;
-    } catch (const exception& e) {
-        cerr << "Error: " << e.what() << endl;
-        return 1;
+        closeDatabase(db);
     }
-    
     return 0;
 }

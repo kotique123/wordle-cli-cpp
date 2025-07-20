@@ -12,3 +12,5 @@ void printGuess(vector<Letter>& guess);
 void addGuess(const vector<Letter>& guess, vector<vector<Letter>>& guesses);
 
 void printAll(const vector<vector<Letter>>& gueses);
+
+void clearScreen();

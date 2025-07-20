@@ -27,3 +27,8 @@ void printAll(const vector<vector<Letter>>& guesses) {
         printGuess(guess);
     }
 }
+
+void clearScreen() {
+    cout << "\x1B[2J\x1B[H";
+    cout.flush();
+}
