@@ -14,7 +14,7 @@ You can find prebuilt binaries of the game in the `Release` section. Make sure t
 
 #### Building from source instructions
 1. Prerequisets `git`,`CMake`,`C++ compiler`.
-2. Clone the repository `git clone`
+2. Clone the repository `git clone https://github.com/kotique123/wordle-cli-cpp`
 3. Go to repository directory `cd wordle-cli`
 4. Make a build directory and go there `mkdir build && cd build`
 5. Generate Makefiles `cmake -DCMAKE_BUILD_TYPE=Release ..`
