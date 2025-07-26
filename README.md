@@ -13,8 +13,8 @@ I decided to use SQLite to store words from the `english-words` repository. I us
 You can find prebuilt binaries of the game in the `Release` section. Make sure that the binary is in the same directory as the `res` folder which contains databases with words.
 
 #### Building from source instructions
-**Build instructions are outdated at the time of writing this line**
-1. Prerequisets `git`,`CMake`,`C++ compiler`, `SQLiteCpp`.
+1. Prerequisets `git`,`CMake`,`C++ compiler`, `SQLiteCpp`, `vcpkg`
+2. Install `SQLiteCpp` using `vcpkg` using a method of your choice.
 2. Clone the repository `git clone https://github.com/kotique123/wordle-cli-cpp`
 3. Go to repository directory `cd wordle-cli`
 4. Make a build directory and go there `mkdir build && cd build`
