@@ -3,7 +3,7 @@
 #include "random.hpp"
 #include "words.hpp"
 #include "drawguess.hpp"
-#include "SQLiteCpp/SQLiteCpp.h"
+#include <SQLiteCpp/SQLiteCpp.h>
 #include <SQLiteCpp/VariadicBind.h>
 
 using namespace std;
